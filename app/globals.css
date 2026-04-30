@@ -1,0 +1,354 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0D82E4;
+  --color-accent-orange: #E46F0D;
+  --color-accent-teal: #0DE4CF;
+  --color-turquoise: #40E0D0;
+  --color-background-light: #FFFFFF;
+  --color-background-dark: #000000;
+
+  --font-display: "Bebas Neue", cursive;
+  --font-sans: "DM Sans", sans-serif;
+  --font-mono: "DM Mono", monospace;
+
+  --radius-DEFAULT: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-full: 9999px;
+
+  --color-status-neon: #0DE4CF;
+  --font-technical: "DM Mono", monospace;
+}
+
+/* ─────────────────────────────────────────────
+   ZEPHVION — Global Styles
+   Extracted 1:1 from original static HTML.
+   DO NOT modify class names, values or structure.
+───────────────────────────────────────────── */
+
+* {
+  box-sizing: border-box;
+}
+
+/* html { scroll-behavior: smooth; } was here. Lenis handles smooth scrolling now. */
+
+body {
+  margin: 0;
+  padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #0d82e4 #000;
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+  background: #000;
+}
+
+/* ── RAILS ── */
+.rail-right {
+  border-left: 1px solid #222;
+}
+
+/* ── NAV LINKS ── */
+.nav-link {
+  display: block;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #3a3a3a;
+  text-decoration: none;
+  transition: color 0.2s, opacity 0.2s;
+  white-space: nowrap;
+  line-height: 1;
+  padding: 0;
+  opacity: 0.7;
+}
+
+.nav-link:hover {
+  color: #0d82e4;
+  opacity: 1;
+}
+
+.nav-link.active {
+  color: #ffffff;
+  opacity: 1;
+}
+
+/* ── COMPONENT EXTRACTED STYLES ── */
+
+/* Navbar & Global Animations */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+
+  70% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+@keyframes popup-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.nav-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-icon-btn:hover,
+.nav-icon-btn.active {
+  border-color: #0D82E4 !important;
+  color: #0D82E4 !important;
+  background: rgba(13, 130, 228, 0.08) !important;
+  box-shadow: 0 0 14px rgba(13, 130, 228, 0.18);
+}
+
+.nav-link-rail {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+  transition: color 0.2s, text-shadow 0.2s;
+  padding: 6px 0;
+}
+
+.nav-link-rail:hover {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+}
+
+/* Legal Modals */
+@keyframes lm-fade {
+  from {
+    opacity: 0
+  }
+
+  to {
+    opacity: 1
+  }
+}
+
+@keyframes lm-slide {
+  from {
+    opacity: 0;
+    transform: translateY(20px)
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0)
+  }
+}
+
+@keyframes lm-scan {
+  0% {
+    left: -15%
+  }
+
+  100% {
+    left: 115%
+  }
+}
+
+.lm-scroll::-webkit-scrollbar {
+  width: 4px
+}
+
+.lm-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, .03)
+}
+
+.lm-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .12);
+  border-radius: 2px
+}
+
+.lm-section-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: #0D82E4;
+  margin: 28px 0 10px;
+}
+
+.lm-body-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: rgba(255, 255, 255, .5);
+  line-height: 1.8;
+  margin: 0 0 12px;
+}
+
+.lm-li {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: rgba(255, 255, 255, .45);
+  line-height: 1.8;
+  padding-left: 16px;
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.lm-li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: rgba(255, 255, 255, .18);
+  font-size: 10px;
+  top: 3px;
+}
+
+/* Footer & Global Misc */
+
+@keyframes fscan {
+  0% {
+    left: -15%
+  }
+
+  100% {
+    left: 115%
+  }
+}
+
+.grid-blueprint {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.font-technical {
+  font-family: var(--font-technical);
+}
+
+.bg-status-neon {
+  background-color: var(--color-status-neon);
+}
+
+.text-status-neon {
+  color: var(--color-status-neon);
+}
+
+.border-status-neon {
+  border-color: var(--color-status-neon);
+}
+
+/* ── UTILITIES ── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes scan-h {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100vw); }
+}
+
+@keyframes scan-v {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.animate-scan-h {
+  animation: scan-h 10s linear infinite;
+}
+
+.animate-scan-v {
+  animation: scan-v 15s linear infinite;
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 60s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes swift-in-right {
+  0% { transform: translateX(40px) scaleX(1.2); opacity: 0; filter: blur(4px); }
+  100% { transform: translateX(0) scaleX(1); opacity: 1; filter: blur(0); }
+}
+
+@keyframes swift-in-left {
+  0% { transform: translateX(-40px) scaleX(1.2); opacity: 0; filter: blur(4px); }
+  100% { transform: translateX(0) scaleX(1); opacity: 1; filter: blur(0); }
+}
+
+.animate-swift-right {
+  animation: swift-in-right 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.animate-swift-left {
+  animation: swift-in-left 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 2px;
+}
+
+.animate-skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.05) 20%,
+    rgba(255, 255, 255, 0.08) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 2.5s infinite linear;
+}
+

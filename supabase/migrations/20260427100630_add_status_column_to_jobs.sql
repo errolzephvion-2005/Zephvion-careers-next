@@ -1,0 +1,3 @@
+
+ALTER TABLE jobs
+ADD COLUMN status TEXT DEFAULT 'OPEN';
