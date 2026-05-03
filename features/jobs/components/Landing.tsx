@@ -120,13 +120,6 @@ export default function Hero({ onSearch }: HeroProps) {
                         {/* Inputs Wrapper */}
                         <div className="flex-1 flex flex-col md:flex-row relative">
 
-                            {/* Mobile Vertical Connecting Line (Right Side) */}
-                            <div className="md:hidden absolute right-6 top-[25%] bottom-[25%] w-[1px] bg-white/20 z-10 pointer-events-none">
-                                {/* Square End (Top) */}
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 border border-[#0DE4CF] bg-black shadow-[0_0_10px_rgba(13,228,207,0.5)]"></div>
-                                {/* Dot End (Bottom) */}
-                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2 h-2 rounded-full bg-[#0DE4CF] shadow-[0_0_10px_rgba(13,228,207,0.5)]"></div>
-                            </div>
 
                             {/* Keyword Input */}
                             <div className="flex-1 relative flex items-center px-4 py-4 md:py-2 w-full group pr-12 md:pr-4">
@@ -165,14 +158,8 @@ export default function Hero({ onSearch }: HeroProps) {
                                 )}
                             </div>
 
-                            {/* Connecting Line (Desktop Only) */}
-                            <div className="hidden md:flex w-20 h-auto relative items-center justify-center shrink-0 pointer-events-none">
-                                <div className="w-full h-[1px] bg-white/20"></div>
-                                {/* Square End (Left) */}
-                                <div className="absolute left-0 w-2 h-2 border border-[#0DE4CF] bg-black shadow-[0_0_10px_rgba(13,228,207,0.5)] -translate-y-[0.5px]"></div>
-                                {/* Dot End (Right) */}
-                                <div className="absolute right-0 w-2 h-2 rounded-full bg-[#0DE4CF] shadow-[0_0_10px_rgba(13,228,207,0.5)] -translate-y-[0.5px]"></div>
-                            </div>
+                            {/* Desktop Divider */}
+                            <div className="hidden md:block w-[1px] h-10 bg-white/10 self-center"></div>
 
                             {/* Mobile Separator */}
                             <div className="md:hidden w-full h-[1px] bg-white/5 my-1"></div>

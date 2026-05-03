@@ -55,43 +55,75 @@ export default function ExploreByCategory({ selectedCategory, onCategorySelect }
     }, []);
 
     const [isHovered, setIsHovered] = useState(false);
+    const scrollPosRef = useRef(0);
+    const velocityRef = useRef(0);
+    const lastTimeRef = useRef(0);
+    const requestRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        if (categories.length === 0) return;
+
+        const container = scrollRef.current;
+        if (!container) return;
+
+        const update = (time: number) => {
+            if (!lastTimeRef.current) lastTimeRef.current = time;
+            const deltaTime = time - lastTimeRef.current;
+            lastTimeRef.current = time;
+
+            // Base auto-scroll velocity (0 if hovered)
+            const autoVelocity = isHovered ? 0 : 0.05; // pixels per ms
+            
+            // Apply manual velocity from wheel
+            scrollPosRef.current += (autoVelocity * deltaTime) + velocityRef.current;
+
+            // Friction for manual velocity
+            velocityRef.current *= 0.95;
+            if (Math.abs(velocityRef.current) < 0.01) velocityRef.current = 0;
+
+            // Seamless loop logic (4 copies)
+            const contentWidth = container.scrollWidth / 4;
+            if (scrollPosRef.current >= contentWidth) {
+                scrollPosRef.current -= contentWidth;
+            } else if (scrollPosRef.current < 0) {
+                scrollPosRef.current += contentWidth;
+            }
+
+            // Apply transform
+            container.style.transform = `translateX(${-scrollPosRef.current}px)`;
+
+            requestRef.current = requestAnimationFrame(update);
+        };
+
+        requestRef.current = requestAnimationFrame(update);
+        return () => {
+            if (requestRef.current) cancelAnimationFrame(requestRef.current);
+        };
+    }, [categories, isHovered]);
 
     useEffect(() => {
         const container = scrollRef.current;
         if (!container) return;
 
-        let frameId: number;
-        const autoScroll = () => {
-            if (!isHovered) {
-                container.scrollLeft += 0.8; // Smooth auto-scroll speed
-
-                // Seamless loop: jump back to start when first set ends
-                const halfWidth = container.scrollWidth / 2;
-                if (container.scrollLeft >= halfWidth) {
-                    container.scrollLeft -= halfWidth;
-                }
+        const nativeWheelHandler = (e: WheelEvent) => {
+            if (isHovered) {
+                // Lock vertical scroll when interacting with cards
+                e.preventDefault();
+                // We still update the velocity for our horizontal movement
+                velocityRef.current += e.deltaY * 0.1;
             }
-            frameId = requestAnimationFrame(autoScroll);
         };
 
-        frameId = requestAnimationFrame(autoScroll);
-        return () => cancelAnimationFrame(frameId);
+        // Use non-passive listener to allow preventDefault()
+        container.addEventListener('wheel', nativeWheelHandler, { passive: false });
+        
+        return () => {
+            container.removeEventListener('wheel', nativeWheelHandler);
+        };
     }, [isHovered]);
 
     const handleWheel = (e: React.WheelEvent) => {
-        const container = scrollRef.current;
-        if (!container) return;
-
-        // Translate vertical wheel to horizontal scroll
-        container.scrollLeft += e.deltaY;
-
-        // Manual scroll loop logic
-        const halfWidth = container.scrollWidth / 2;
-        if (container.scrollLeft >= halfWidth) {
-            container.scrollLeft -= halfWidth;
-        } else if (container.scrollLeft <= 0) {
-            container.scrollLeft += halfWidth;
-        }
+        // Native listener handles the logic now to allow preventDefault
     };
 
     const CategorySkeleton = () => (
@@ -138,52 +170,53 @@ export default function ExploreByCategory({ selectedCategory, onCategorySelect }
                     </div>
                 </div>
 
-                {/* Categories Container */}
-                <div
-                    ref={scrollRef}
-                    onWheel={handleWheel}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                    onTouchStart={() => setIsHovered(true)}
-                    onTouchEnd={() => setIsHovered(false)}
-                    className="relative overflow-x-auto no-scrollbar -mx-6 select-none pb-12"
-                >
-                    <div className="flex gap-6 py-4 px-6 w-max">
-                        {/* Duplicate categories twice for seamless loop */}
-                        {[...categories, ...categories].map((cat, i) => (
-                            <div
-                                key={`${cat.name}-${i}`}
-                                className={`group flex items-center gap-5 px-6 py-4 min-w-[300px] transition-all duration-500 cursor-pointer border relative overflow-hidden hover:-translate-y-1.5 hover:z-20
-                                    ${selectedCategory === cat.name ? 'border-[#0DE4CF]/80 bg-[#0DE4CF]/10 shadow-[0_0_30px_rgba(13,228,207,0.2)]' : 'bg-zinc-900/40 border-white/5 hover:border-[#0DE4CF]/40 hover:bg-[#0DE4CF]/[0.03] hover:shadow-[0_0_30px_rgba(13,228,207,0.1)]'}`}
-                                onClick={() => onCategorySelect(cat.name)}
-                            >
-                                {/* Subtle scan line on hover */}
-                                <div className="absolute inset-0 w-full h-[1px] bg-[#0DE4CF]/20 translate-y-[-100%] group-hover:animate-[scan-v_3s_linear_infinite] pointer-events-none"></div>
-
-                                <div className="w-12 h-12 flex items-center justify-center transition-all duration-500 border border-white/10 bg-zinc-950/50 group-hover:border-[#0DE4CF]/50 group-hover:bg-[#0DE4CF]/10 group-hover:shadow-[0_0_15px_rgba(13,228,207,0.2)]">
-                                    <span className="material-symbols-outlined text-xl text-zinc-500 transition-colors duration-500 group-hover:text-[#0DE4CF]">
-                                        {cat.icon}
-                                    </span>
-                                </div>
-
-                                <div className="flex-1">
-                                    <h3 className="font-technical text-[12px] tracking-widest uppercase transition-colors duration-300 text-zinc-300 group-hover:text-[#0DE4CF]">
-                                        {cat.name}
-                                    </h3>
-                                    <div className="flex items-center gap-2 mt-1.5">
-                                        <div className="w-1 h-1 rounded-full bg-zinc-700 group-hover:bg-[#0DE4CF] transition-colors duration-500"></div>
-                                        <p className="text-zinc-600 font-technical text-[8px] tracking-[0.2em] uppercase">
-                                            {cat.jobs} ACTIVE NODES
-                                        </p>
+                <div className="relative overflow-hidden -mx-6 pb-12">
+                    <div 
+                        ref={scrollRef}
+                        onWheel={handleWheel}
+                        className="flex gap-6 py-4 px-6 w-max select-none will-change-transform"
+                    >
+                        {/* 
+                            Dynamic Velocity Loop: 
+                            We render 4 sets to ensure no gaps during manual high-speed scrolls.
+                            The JS engine handles the smooth movement and perfect looping.
+                        */}
+                        {[0, 1, 2, 3].map((setIndex) => (
+                            <React.Fragment key={`set-${setIndex}`}>
+                                {categories.map((cat, i) => (
+                                    <div
+                                        key={`${cat.name}-${setIndex}-${i}`}
+                                        onMouseEnter={() => setIsHovered(true)}
+                                        onMouseLeave={() => setIsHovered(false)}
+                                        className={`category-card group flex items-center gap-5 px-6 py-4 min-w-[300px] transition-all duration-500 cursor-pointer border relative overflow-hidden hover:-translate-y-1.5 hover:z-20
+                                            ${selectedCategory === cat.name ? 'border-[#0DE4CF]/80 bg-[#0DE4CF]/10 shadow-[0_0_30px_rgba(13,228,207,0.2)]' : 'bg-zinc-900/40 border-white/5 hover:border-[#0DE4CF]/40 hover:bg-[#0DE4CF]/[0.03] hover:shadow-[0_0_30px_rgba(13,228,207,0.1)]'}`}
+                                        onClick={() => onCategorySelect(cat.name)}
+                                    >
+                                        <div className="absolute inset-0 w-full h-[1px] bg-[#0DE4CF]/20 translate-y-[-100%] group-hover:animate-[scan-v_3s_linear_infinite] pointer-events-none"></div>
+                                        <div className="w-12 h-12 flex items-center justify-center transition-all duration-500 border border-white/10 bg-zinc-950/50 group-hover:border-[#0DE4CF]/50 group-hover:bg-[#0DE4CF]/10 group-hover:shadow-[0_0_15px_rgba(13,228,207,0.2)]">
+                                            <span className="material-symbols-outlined text-xl text-zinc-500 transition-colors duration-500 group-hover:text-[#0DE4CF]">
+                                                {cat.icon}
+                                            </span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-technical text-[12px] tracking-widest uppercase transition-colors duration-300 text-zinc-300 group-hover:text-[#0DE4CF]">
+                                                {cat.name}
+                                            </h3>
+                                            <div className="flex items-center gap-2 mt-1.5">
+                                                <div className="w-1 h-1 rounded-full bg-zinc-700 group-hover:bg-[#0DE4CF] transition-colors duration-500"></div>
+                                                <p className="text-zinc-600 font-technical text-[8px] tracking-[0.2em] uppercase">
+                                                    {cat.jobs} ACTIVE NODES
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <span className="material-symbols-outlined text-sm transition-all duration-500 text-zinc-800 translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:-translate-y-1 group-hover:-rotate-45 group-hover:opacity-100 group-hover:text-[#0DE4CF]">
+                                                arrow_forward
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="flex flex-col items-end gap-2">
-                                    <span className="material-symbols-outlined text-sm transition-all duration-500 text-zinc-800 translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:-translate-y-1 group-hover:-rotate-45 group-hover:opacity-100 group-hover:text-[#0DE4CF]">
-                                        arrow_forward
-                                    </span>
-                                </div>
-                            </div>
+                                ))}
+                            </React.Fragment>
                         ))}
                     </div>
 

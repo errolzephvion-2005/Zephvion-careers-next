@@ -23,7 +23,7 @@ export default function TrendingJobs({ searchKeyword = '', searchLocation = '', 
     const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
     const [isClosing, setIsClosing] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [categories, setCategories] = useState<string[]>(['ALL CATEGORY']);
+    const [categories, setCategories] = useState<string[]>(['ALL CATEGORY', 'TECHNICAL', 'NON-TECHNICAL']);
     const [slideDir, setSlideDir] = useState<'left' | 'right'>('right');
     const jobsPerPage = 6;
 
@@ -66,12 +66,8 @@ export default function TrendingJobs({ searchKeyword = '', searchLocation = '', 
     }, []);
 
     const fetchCategories = async () => {
-        try {
-            const { categories: fetchedCategories } = await getFilters();
-            setCategories(['ALL CATEGORY', ...fetchedCategories]);
-        } catch (error) {
-            console.error("Failed to fetch categories:", error);
-        }
+        // Slider options: ALL, TECHNICAL, NON-TECHNICAL
+        setCategories(['ALL CATEGORY', 'TECHNICAL', 'NON-TECHNICAL']);
     };
 
     // Reset pagination when search changes
@@ -161,9 +157,15 @@ export default function TrendingJobs({ searchKeyword = '', searchLocation = '', 
             job.location?.toLowerCase().includes(searchLocation.toLowerCase())
         ) : true;
 
-        const matchesCategory = selectedCategory !== 'ALL CATEGORY' ? (
-            job.category === selectedCategory
-        ) : true;
+        const matchesCategory = (() => {
+            if (selectedCategory === 'ALL CATEGORY') return true;
+            if (['TECHNICAL', 'NON-TECHNICAL'].includes(selectedCategory)) {
+                // Real-time filter based on job_type column
+                return job.jobType?.toLowerCase() === selectedCategory.toLowerCase();
+            }
+            // Specific category from Explore section
+            return job.category === selectedCategory;
+        })();
 
         return matchesKeyword && matchesLocation && matchesCategory;
     }).sort((a, b) => {
@@ -174,7 +176,7 @@ export default function TrendingJobs({ searchKeyword = '', searchLocation = '', 
 
     const isSearching = searchKeyword.trim() !== '' || searchLocation.trim() !== '' || selectedCategory !== 'ALL CATEGORY';
 
-    const titleText = isSearching ? "SEARCH RESULTS" : "TRENDING JOBS";
+    const titleText = isSearching ? "SEARCH RESULTS" : "Available JOBS";
     const subtitleText = isSearching
         ? `Found ${filteredJobs.length} Roles matching your query`
         : "High-priority recruitment Roles // active";
@@ -219,69 +221,58 @@ export default function TrendingJobs({ searchKeyword = '', searchLocation = '', 
                         </div>
                     </div>
 
-                    {/* Redesigned Category Slider */}
-                    {/* Cute & Small Category Slider */}
-                    <div className="md:col-span-1 w-full md:max-w-[380px] md:ml-auto mx-auto">
-                        <div className="group/slider relative">
-                            {/* Sharp Decorative Corner */}
-                            <div className="absolute -top-1 -right-1 w-2 h-2 border-t border-r border-[#0DE4CF]/40 transition-all group-hover/slider:border-[#0DE4CF]"></div>
-                            
-                            <div className="flex items-center bg-zinc-900/40 border border-white/10 backdrop-blur-md overflow-hidden rounded-sm relative">
-                                {/* Prev Button */}
-                                <button 
-                                    onClick={handlePrevCategory} 
-                                    className="p-3 flex items-center justify-center text-zinc-500 hover:text-[#0DE4CF] hover:bg-white/5 transition-all active:scale-90 border-r border-white/5"
-                                >
-                                    <span className="material-symbols-outlined text-base">chevron_left</span>
-                                </button>
+                    {/* Slider / Badge Area */}
+                    <div className="md:col-span-1 w-full md:max-w-[380px] md:ml-auto mx-auto flex items-center justify-end">
+                        {(!['TECHNICAL', 'NON-TECHNICAL', 'ALL CATEGORY'].includes(selectedCategory)) ? (
+                            /* Rounded Batch for Specific Categories */
+                            <div 
+                                onClick={() => onCategoryChange?.('ALL CATEGORY')}
+                                className="flex items-center gap-3 bg-[#0DE4CF]/5 border border-[#0DE4CF]/20 px-5 py-2.5 rounded-full cursor-pointer hover:bg-[#0DE4CF]/10 hover:border-[#0DE4CF]/40 transition-all group shadow-[0_0_20px_rgba(13,228,207,0.05)]"
+                            >
+                                <span className="text-white font-technical text-[10px] tracking-[0.2em] uppercase">{selectedCategory}</span>
+                                <div className="h-4 w-[1px] bg-white/10 mx-1"></div>
+                                <span className="material-symbols-outlined text-sm text-[#0DE4CF] group-hover:scale-110 transition-transform">close</span>
+                            </div>
+                        ) : (
+                            /* Standard Slider for Technical/Non-Technical */
+                            <div className="group/slider relative w-full">
+                                {/* Sharp Decorative Corner */}
+                                <div className="absolute -top-1 -right-1 w-2 h-2 border-t border-r border-[#0DE4CF]/40 transition-all group-hover/slider:border-[#0DE4CF]"></div>
 
-                                {/* Category Display with Smart Marquee */}
-                                <div className="flex-1 relative h-10 flex items-center overflow-hidden px-4 group/cat">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/0 via-[#0DE4CF]/5 to-zinc-900/0 opacity-0 group-hover/cat:opacity-100 transition-opacity duration-700"></div>
-                                    
-                                    <div 
-                                        key={selectedCategory}
-                                        className={`w-full flex items-center justify-center whitespace-nowrap
-                                            ${slideDir === 'right' ? 'animate-swift-right' : 'animate-swift-left'}`}
+                                <div className="flex items-center bg-zinc-900/40 border border-white/10 backdrop-blur-md overflow-hidden rounded-sm relative">
+                                    {/* Prev Button */}
+                                    <button
+                                        onClick={handlePrevCategory}
+                                        className="p-3 flex items-center justify-center text-zinc-500 hover:text-[#0DE4CF] hover:bg-white/5 transition-all active:scale-90 border-r border-white/5"
                                     >
-                                        <span className="text-white font-technical text-[9px] tracking-[0.2em] uppercase whitespace-nowrap overflow-hidden text-ellipsis">
-                                            {selectedCategory}
-                                        </span>
-                                    </div>
-                                </div>
+                                        <span className="material-symbols-outlined text-base">chevron_left</span>
+                                    </button>
 
-                                {/* Next Button / Reset Group */}
-                                <div className="flex items-center">
-                                    <button 
-                                        onClick={handleNextCategory} 
+                                    {/* Category Display */}
+                                    <div className="flex-1 relative h-10 flex items-center overflow-hidden px-4 group/cat">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/0 via-[#0DE4CF]/5 to-zinc-900/0 opacity-0 group-hover/cat:opacity-100 transition-opacity duration-700"></div>
+
+                                        <div
+                                            key={selectedCategory}
+                                            className={`w-full flex items-center justify-center whitespace-nowrap
+                                                ${slideDir === 'right' ? 'animate-swift-right' : 'animate-swift-left'}`}
+                                        >
+                                            <span className="text-white font-technical text-[9px] tracking-[0.2em] uppercase whitespace-nowrap overflow-hidden text-ellipsis">
+                                                {selectedCategory === 'ALL CATEGORY' ? 'SELECT CATEGORY' : selectedCategory}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Next Button */}
+                                    <button
+                                        onClick={handleNextCategory}
                                         className="p-3 flex items-center justify-center text-zinc-500 hover:text-[#0DE4CF] hover:bg-white/5 transition-all active:scale-90 border-l border-white/5"
                                     >
                                         <span className="material-symbols-outlined text-base">chevron_right</span>
                                     </button>
-
-                                    {/* Mobile Reset (Inside) */}
-                                    {selectedCategory !== 'ALL CATEGORY' && (
-                                        <button 
-                                            onClick={() => onCategoryChange?.('ALL CATEGORY')}
-                                            className="md:hidden p-3 flex items-center justify-center text-zinc-600 hover:text-[#0DE4CF] border-l border-white/5 transition-all"
-                                        >
-                                            <span className="material-symbols-outlined text-base">restart_alt</span>
-                                        </button>
-                                    )}
                                 </div>
                             </div>
-
-                            {/* Desktop Reset (Outside) */}
-                            {selectedCategory !== 'ALL CATEGORY' && (
-                                <button 
-                                    onClick={() => onCategoryChange?.('ALL CATEGORY')}
-                                    title="Reset Category"
-                                    className="hidden md:flex absolute -right-10 top-1/2 -translate-y-1/2 p-2 items-center justify-center text-zinc-600 hover:text-[#0DE4CF] transition-all hover:scale-110 active:rotate-180 duration-500 group/reset"
-                                >
-                                    <span className="material-symbols-outlined text-xl group-hover/reset:shadow-[0_0_10px_#0DE4CF]">restart_alt</span>
-                                </button>
-                            )}
-                        </div>
+                        )}
                     </div>
                 </div>
 
@@ -343,7 +334,7 @@ export default function TrendingJobs({ searchKeyword = '', searchLocation = '', 
                                                                 <span className="font-technical text-[9px] text-[#0DE4CF] uppercase tracking-widest">{job.status}</span>
                                                             </div>
 
-                                                            {isSearching && job.isTrending && (
+                                                            {job.isTrending && (
                                                                 <div className="flex items-center gap-2 border border-[#0DE4CF]/30 bg-[#0DE4CF]/5 px-2 py-0.5">
                                                                     <span className="material-symbols-outlined text-[10px] text-[#0DE4CF]">trending_up</span>
                                                                     <span className="font-technical text-[9px] text-[#0DE4CF] uppercase tracking-widest">Trending</span>
