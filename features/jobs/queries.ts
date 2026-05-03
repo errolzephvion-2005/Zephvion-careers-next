@@ -19,6 +19,7 @@ export interface Job {
   is_trending: boolean;
   is_active: boolean;
   created_at: string;
+  status: string;
 }
 
 // UI Job Interface
@@ -37,6 +38,7 @@ export interface UIJob {
   category: string;
   jobType: string;
   isTrending: boolean;
+
 }
 
 /**
@@ -75,7 +77,7 @@ export async function getJobs(): Promise<UIJob[]> {
         : ["Problem Solving", "Team Leadership", "Strategic Planning"],
       division: job.service_line.toUpperCase().replace(/\s+/g, '_'),
       salary: job.salary || 'NOT DISCLOSED',
-      status: 'OPEN',
+      status: job.status || "OPEN",
       isTrending: job.is_trending
     };
   });

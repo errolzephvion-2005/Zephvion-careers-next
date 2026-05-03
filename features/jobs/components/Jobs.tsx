@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getJobs, UIJob, getFilters } from "../queries";
+import { getJobs, UIJob } from "../queries";
 
 // Extend UIJob for the component's specific needs
 interface Job extends UIJob {
@@ -225,7 +225,7 @@ export default function TrendingJobs({ searchKeyword = '', searchLocation = '', 
                     <div className="md:col-span-1 w-full md:max-w-[380px] md:ml-auto mx-auto flex items-center justify-end">
                         {(!['TECHNICAL', 'NON-TECHNICAL', 'ALL CATEGORY'].includes(selectedCategory)) ? (
                             /* Rounded Batch for Specific Categories */
-                            <div 
+                            <div
                                 onClick={() => onCategoryChange?.('ALL CATEGORY')}
                                 className="flex items-center gap-3 bg-[#0DE4CF]/5 border border-[#0DE4CF]/20 px-5 py-2.5 rounded-full cursor-pointer hover:bg-[#0DE4CF]/10 hover:border-[#0DE4CF]/40 transition-all group shadow-[0_0_20px_rgba(13,228,207,0.05)]"
                             >
