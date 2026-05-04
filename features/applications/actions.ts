@@ -88,6 +88,8 @@ export async function submitApplication(formData: FormData) {
   let resumeUrl = 'pending_upload';
   let coverLetterUrl = null;
 
+  const adminClient = createAdminClient();
+
   try {
     // Generate a unique file name
     const timestamp = Date.now();
@@ -99,7 +101,7 @@ export async function submitApplication(formData: FormData) {
     
     console.log(`[Submission] Uploading resume: ${resumePath}`);
     // Upload Resume
-    const { data: resumeUpload, error: resumeError } = await supabase.storage
+    const { data: resumeUpload, error: resumeError } = await adminClient.storage
       .from('resume_and_cover_letter')
       .upload(resumePath, resumeFile);
 
@@ -110,14 +112,14 @@ export async function submitApplication(formData: FormData) {
     console.log("[Submission] Resume uploaded successfully");
 
     if (resumeUpload) {
-      const { data: publicUrlData } = supabase.storage.from('resume_and_cover_letter').getPublicUrl(resumePath);
+      const { data: publicUrlData } = adminClient.storage.from('resume_and_cover_letter').getPublicUrl(resumePath);
       resumeUrl = publicUrlData.publicUrl;
     }
 
     // Upload Cover Letter (Optional)
     if (coverLetterFile && coverLetterFile.size > 0) {
       const coverPath = `cover_letters/${timestamp}_${coverLetterFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-      const { data: coverUpload, error: coverError } = await supabase.storage
+      const { data: coverUpload, error: coverError } = await adminClient.storage
         .from('resume_and_cover_letter')
         .upload(coverPath, coverLetterFile);
         
@@ -129,7 +131,7 @@ export async function submitApplication(formData: FormData) {
       }
 
       if (coverUpload) {
-        const { data: publicUrlData } = supabase.storage.from('resume_and_cover_letter').getPublicUrl(coverPath);
+        const { data: publicUrlData } = adminClient.storage.from('resume_and_cover_letter').getPublicUrl(coverPath);
         coverLetterUrl = publicUrlData.publicUrl;
       }
     }
@@ -139,7 +141,7 @@ export async function submitApplication(formData: FormData) {
   }
 
   // 4. Candidate Management (Optimized: Only update if fields changed)
-  const adminClient = createAdminClient();
+  // adminClient is already created above
   let candidateId: number;
 
   const { data: existingCandidate } = await adminClient

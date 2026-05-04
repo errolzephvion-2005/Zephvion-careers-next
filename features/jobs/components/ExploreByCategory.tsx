@@ -60,6 +60,10 @@ export default function ExploreByCategory({ selectedCategory, onCategorySelect }
     const lastTimeRef = useRef(0);
     const requestRef = useRef<number | null>(null);
 
+    // Touch handling refs
+    const touchStartPosRef = useRef({ x: 0, y: 0 });
+    const isScrollingRef = useRef<boolean | null>(null);
+
     useEffect(() => {
         if (categories.length === 0) return;
 
@@ -110,7 +114,9 @@ export default function ExploreByCategory({ selectedCategory, onCategorySelect }
                 // Lock vertical scroll when interacting with cards
                 e.preventDefault();
                 // We still update the velocity for our horizontal movement
-                velocityRef.current += e.deltaY * 0.1;
+                // Support both vertical wheel and horizontal trackpad swipes
+                const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+                velocityRef.current += delta * 0.1;
             }
         };
 
@@ -124,6 +130,53 @@ export default function ExploreByCategory({ selectedCategory, onCategorySelect }
 
     const handleWheel = (e: React.WheelEvent) => {
         // Native listener handles the logic now to allow preventDefault
+    };
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        setIsHovered(true);
+        touchStartPosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        lastTimeRef.current = performance.now();
+        velocityRef.current = 0;
+        isScrollingRef.current = null;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!e.touches[0]) return;
+        
+        const touchCurrentX = e.touches[0].clientX;
+        const touchCurrentY = e.touches[0].clientY;
+        
+        const deltaX = touchStartPosRef.current.x - touchCurrentX;
+        const deltaY = touchStartPosRef.current.y - touchCurrentY;
+
+        if (isScrollingRef.current === null) {
+            // Determine if the user is scrolling vertically or horizontally
+            isScrollingRef.current = Math.abs(deltaY) > Math.abs(deltaX);
+        }
+
+        if (isScrollingRef.current) {
+            // Let the browser handle vertical scrolling
+            setIsHovered(false);
+            return;
+        }
+
+        // Horizontal swipe - apply to carousel
+        touchStartPosRef.current.x = touchCurrentX;
+        touchStartPosRef.current.y = touchCurrentY;
+        
+        scrollPosRef.current += deltaX;
+        
+        const now = performance.now();
+        const deltaTime = now - lastTimeRef.current;
+        if (deltaTime > 0) {
+            velocityRef.current = deltaX / deltaTime * 16;
+        }
+        lastTimeRef.current = now;
+    };
+
+    const handleTouchEnd = () => {
+        setIsHovered(false);
+        isScrollingRef.current = null;
     };
 
     const CategorySkeleton = () => (
@@ -174,6 +227,10 @@ export default function ExploreByCategory({ selectedCategory, onCategorySelect }
                     <div 
                         ref={scrollRef}
                         onWheel={handleWheel}
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                        style={{ touchAction: 'pan-y' }}
                         className="flex gap-6 py-4 px-6 w-max select-none will-change-transform"
                     >
                         {/* 
