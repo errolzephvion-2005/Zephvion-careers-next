@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ThankYou from "@/features/applications/components/ThankYou";
 
@@ -13,6 +13,18 @@ import PrivacyPolicy from "@/app/legal/PrivacyPolicy";
 import TermsOfService from "@/app/legal/TermsOfService";
 
 export default function ApplicationPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black pt-24 pb-12 px-4 flex justify-center items-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#0DE4CF]"></div>
+      </div>
+    }>
+      <ApplicationContent />
+    </Suspense>
+  );
+}
+
+function ApplicationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const jobId = searchParams.get("jobId");
